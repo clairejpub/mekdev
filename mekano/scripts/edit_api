@@ -1,0 +1,2 @@
+#!/bin/sed -f
+s/class \([A-Z][A-Za-z]*\) : public \([A-Z][A-Za-z]*\) {/struct \1:\2\n{\n\tstatic char const*_classname(){return"\1";}\n\tstatic \1*_convert(eyedb::Object*o){if(!o)return 0;if(Root*x=mekanoDatabase::asRoot(o))return x->as\1();return 0;}/

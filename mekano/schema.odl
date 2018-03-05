@@ -1,0 +1,185 @@
+// $Id: schema.odl 771 2007-05-31 09:42:06Z stuart $
+// (enscript -MA4 --margins 14:15 -2fHelvetica9.7 -T2 schema.odl)
+
+class Bank
+{
+	string name;
+	index on name;
+	constraint<unique> on name;
+	constraint<notnull> on name;
+	int length;
+};
+
+class Clone
+{
+	string<23> name;
+	index<btree> on name;
+	constraint<unique> on name;
+	constraint<notnull> on name;
+	Bank * bank;
+};
+
+class Read
+{
+	string<23> name;
+	index<btree> on name;
+	constraint<unique> on name;
+	constraint<notnull> on name;
+	Clone * clone;
+	int length;
+};
+	
+class Sequence
+{
+	string<23> name;
+	index<btree> on name;
+	constraint<unique> on name;
+	int length; // using hole_size for Supercontig
+	Stage * created_in;
+};
+
+class ReadPosition
+{
+	Read * read;
+	int start_on_read;
+	int start_on_contig;
+	int length;
+	bool forward;
+};
+
+class ContinuousSequence extends Sequence {};
+
+class Contig extends ContinuousSequence
+{
+	ReadPosition reads[];
+	string consensus;
+};
+
+class Cut
+{
+	ContinuousSequence * cseq;
+	int start; // if start > stop then is reverse
+	int stop;
+	Supercontig * source;
+	bool source_forward;
+};
+
+class Metacontig extends ContinuousSequence
+{
+	Cut cuts[];
+};
+
+class Region
+{
+	Sequence * sequence;
+	int gap_after; // after this sequence
+		// == -1 iff gap of unknown size
+		// == 0 iff no gap
+		// == 1 iff gap of size 0 or 1
+		// > 1 gap's size
+		// null iff last Region in Supercontig
+	// if first==last && start_on_first>stop_on_last then is reverse
+	ContinuousSequence * first; // first to be kept
+	int start_on_first;
+	ContinuousSequence * last; // last to be kept
+	int stop_on_last;
+};
+
+class LinkCount
+{
+	Supercontig * sctg;
+	int n;
+};
+
+class LinkCounts
+{
+	LinkCount link_counts[];
+};
+
+class Supercontig extends Sequence
+{
+	Region regions[];
+	int nb_ctg; // calculated position in Stage.ctg_counts
+ 	int nb_cseq; // calculated position in Stage.cseq_counts
+	LinkCounts clone_links; //calculated 
+	LinkCounts matches; //calculated 
+};
+
+class SupercontigPair
+{
+	Supercontig * sctg0;
+	Supercontig * sctg1;
+};
+
+class Calculated // only one of these will exist
+{
+	array<bag<SupercontigPair> *> clone_links;
+	array<bag<SupercontigPair> *> matches;
+};
+
+class Parameters // only one of these will exist
+{
+	int hole_size;
+	Calculated * calculated;
+};
+
+class GroupName
+{
+	string name; index on name; constraint<unique> on name;
+	string comment;
+};
+
+class SupercontigSet
+{
+	set<Supercontig *> s; implementation <type = btree> on s;
+};
+
+class Group
+{
+	set<Supercontig *> sctgs;
+	GroupName * name;
+	array<SupercontigSet *> length_counts; // fast searching
+	array<SupercontigSet *> ctg_counts; // fast searching
+	array<SupercontigSet *> cseq_counts; // fast searching
+};
+
+class StageType
+{
+	string name; index on name; constraint<unique> on name;
+	string comment;
+};
+
+class Stage
+{
+	int id;
+	index on id;
+	constraint<unique> on id;
+	constraint<notnull> on id;
+	Group groups[];
+	implementation <type = btree> on groups.sctgs;
+	StageType * stage_type;
+};
+
+class Algorithm
+{
+	string name;
+	index on name;
+	constraint<unique> on name;
+	constraint<notnull> on name;
+	string comment;
+};
+
+class MatchSide
+{
+	ContinuousSequence * sequence;
+	int start; // if start > stop then is reverse
+	int stop;
+};
+
+class Match
+{
+	Algorithm * algorithm;
+	MatchSide sides[2];
+	index <btree> on sides.sequence;
+	double id_ratio; // [0-1]
+};

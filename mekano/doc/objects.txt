@@ -1,0 +1,214 @@
+# $Id: objects.txt 100 2006-03-15 17:31:00Z stuart $
+Contig join (to make a SuperContig)
+
+inputs:
+	Stage: current Stage (S)
+	integer: current Group within S (g)
+
+	SequenceContinue: (cº) 
+	boolean: is cº forward? (fº)
+	SequenceContinue: (c¹) 
+	boolean: is c¹ forward? (f¹)
+	SequenceContinue: (c²)
+	boolean: is c² forward? (f²)
+	SequenceContinue: (c³)
+	boolean: is c³ forward? (f³)
+	.....
+	SequenceContinue: (n­1)'th SequenceContinue (c")
+	boolean: is c" forward? (f")
+	SequenceContinue: n'th SequenceContinue (c')
+	boolean: is c' forward? (f')
+
+	integer: number of bases to trim off the start of cº (sº)
+	integer: number of bases to trim off the end of cº (eº)
+	boolean: join cº & c¹ (jº)? {true in following example}
+	if (!jº)
+		integer: gap between cº & c¹ (gº)
+	integer: number of bases to trim off the start of c¹ (s¹)
+	integer: number of bases to trim off the end of c¹ (e¹)
+	boolean: join c¹ & c² (j¹)? {true}
+	if (!j¹)
+		integer: gap between c¹ & c² (g¹)
+	integer: number of bases to trim off the start of c² (s²)
+	integer: number of bases to trim off the end of c² (e²)
+	boolean: join c² & c³ (j²)? {false}
+	if (!j²)
+		integer: gap between c² & c³ (g²)
+	integer: number of bases to trim off the start of c³ (s³)
+	integer: number of bases to trim off the end of c³ (e³)
+	...
+	integer: number of bases to trim off the start of c" (s")
+	integer: number of bases to trim off the start of c" (e")
+	boolean: join c" & c' (c")? {true}
+	if (!c")
+		integer: gap between c" & c' (g")
+	integer: number of bases to trim off the start of c' (s')
+	integer: number of bases to trim off the start of c' (e')
+outputs:
+	mº = MetaContig
+		length = cº.length - sº - eº + c¹.length - s¹ - e¹ + c².length - s² - e²
+		id = min(select MetaContig.id) - 1
+		created_in = S
+		regions[0]
+			contig = cº
+			forward = fº
+			start = sº + 1
+			stop = cº.length - eº
+		regions[1]
+			contig = c¹
+			forward = f¹
+			start = s¹ + 1
+			stop = c¹.length - e¹
+		regions[2]
+			contig = c²
+			forward = f²
+			start = s² + 1
+			stop = c².length - e²
+	m¹ = MetaContig
+		length = c".length - s" - e" + c'.length - s' - e'
+		id = min(select MetaContig.id) - 1
+		created_in = S
+		regions[0]
+			contig = c"
+			forward = f"
+			start = s" + 1
+			stop = c".length - e"
+		regions[1]
+			contig = c'
+			forward = f'
+			start = s' + 1
+			stop = c'.length - e'
+	s = SuperContig
+		length = null
+		id = min(select SuperContig.id) - 1
+		created_in = S
+		regions[0]
+			sequence = mº
+			gap = g²
+			forward = true
+			first = mº
+			start = 1
+			last = mº
+			stop = mº.length
+		regions[1]
+			sequence = c³
+			gap = g³
+			forward = f³
+			first = c³
+			start = e³
+			last = c³
+			stop = c³.length
+		...
+		regions[n - 4]
+			sequence = m¹
+			gap = null
+			forward = f'
+			first = c"
+			start = e"
+			last = c'
+			stop = c'.length
+		oiko_name = null
+	S.groups[g].append(s)
+
+SuperContig join (to make a SuperContig)
+
+inputs:
+	Stage: current Stage (S)
+	integer: current Group within S (g)
+
+	SuperContig: SuperContig (sº) 
+	boolean: is sº forward? (fº)
+
+
+	SuperContig: SuperContig (s¹) 
+	boolean: is s¹ forward? (f¹)
+	...
+	SuperContig: nth SuperContig (c')
+	boolean: is c' forward? (f')
+
+	integer: gap between the sº & s¹ (gº)
+	integer: gap between the s¹ & s² (g¹)
+outputs:
+	s = SuperContig
+		length = regions[0].sequence.length + gº + regions[1].sequence.length + g¹ + regions[n - 1].sequence.length
+		id = min(select SuperContig.id) - 1
+		created_in = S
+		regions[0]
+			sequence = sº
+			gap = gº
+			forward = fº
+			first = sº.regions[0].first
+			start = sº.regions[0].start
+			last = sº.regions[sº.regions_cnt - 1].last
+			stop = sº.regions[sº.regions_cnt - 1].stop
+		regions[1]
+			sequence = s¹
+			gap = g¹
+			forward = f¹
+			first = s¹.regions[0].first
+			start = s¹.regions[0].start
+			last = s¹.regions[s¹.regions_cnt - 1].last
+			stop = s¹.regions[s¹.regions_cnt - 1].stop
+		...
+		regions[n - 1]
+			sequence = s'
+			gap = null
+			forward = f'
+			first = s'.regions[0].first
+			start = s'.regions[0].start
+			last = s'.regions[s'.regions_cnt - 1].last
+			stop = s'.regions[s'.regions_cnt - 1].stop
+		oiko_name = null
+	S.groups[g].append(s)
+	S.groups[g].remove(sº)
+	S.groups[g].remove(s¹)
+	S.groups[g].remove(s')
+
+patch (insert SuperContig into the middle of a SuperContig)
+
+inputs:
+	Stage: current Stage (S)
+
+	SuperContig: SuperContig (sº) 
+	boolean: is sº forward? (fº)
+	SuperContig: SuperContig (s¹) 
+	boolean: is s¹ forward? (f¹)
+
+	Contig: last Contig from sº before split (cº)
+temp:
+	Contig: Contig after c in sº (c¹)
+
+outputs:
+	s² = SuperContig
+		length = ?
+		id = min(select SuperContig.id) - 1
+		created_in = S
+		regions[0]
+			sequence = sº
+			gap = 0
+			forward = fº
+			first = sº.regions[0].first
+			start = sº.regions[0].start
+			last = cº
+			stop = stop from the Region containing cº
+		regions[1]
+			sequence = s¹
+			gap = 0
+			forward = f¹
+			first = s¹.regions[0].first
+			start = s¹.regions[0].start
+			last = s¹.regions[s¹.regions_cnt() - 1].last
+			stop = s¹.regions[s¹.regions_cnt() - 1].stop
+		regions[2]
+			sequence = sº
+			gap = null
+			forward = fº
+			first = c¹
+			start = start from the Region containing c¹
+			last = sº.regions[sº.regions_cnt() - 1].last
+			stop = sº.regions[sº.regions_cnt() - 1].stop
+	S.groups.remove(sº)
+	S.groups.remove(s¹)
+	S.groups.append(s²)
+
+# (enscript --margins 13:13 -2 -f Helvetica10 --filter 'iconv -f utf8 -t latin1 %s|expand -4' -X latin1 $%)

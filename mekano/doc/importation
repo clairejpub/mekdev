@@ -1,0 +1,35 @@
+Avant de faire une importation il faut créer les utilisateurs qui vont utiliser la base.
+Pour faire ceci on utilise la commande eyedbuseradd
+
+	eyedbuseradd --strict-unix=ericp
+
+Le programme s'appelle mekano_load.
+
+Pour faire une importation il faut préparer le fichier d'initialisation.
+Ce fichier peut contenir les nom des fichiers d'étapes.
+
+On fait alors:
+	mekano_load <initialisation>
+
+Si vous avec des fichiers d'étape qui ne sont pas dans le le fichier d'initialisation
+vous pouvez faire
+	mekano_load <initialisation> <fichier_etape_1> <fichier_etape_2> ...
+
+mekano_load crée une base avec le nom donné dans le fichier d'initialisation
+en y ajoutant un suffix «#» et un numéro unique. mekano_load imprime le nom choisi.
+
+La base créée peut être utilisée immédiatement après l'importation.
+
+Il est possible d'ajouter des étapes après l'importation. Si la base créée s'appelle RX#xx, on fait
+	mekano_load --stages=RX#xx <fichier_etape_1> <fichier_etape_2> ...
+
+Vous pouvez aussi ajouter des matches.
+	mekano_load --matches=RX#xx <fichier_matches_1> <fichier_matches_2> ...
+
+Après une importation on peut ajouter des utilisateurs à la liste de ceux autorisés
+à utiliser la base avec la commande eyedbuserdbaccess
+
+	eyedbuserdbaccess ericp RX r
+
+% (gnome-terminal -x aspell -c $%) Get
+% $Id: importation 654 2007-04-10 13:56:51Z stuart $

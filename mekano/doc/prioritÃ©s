@@ -1,0 +1,30 @@
+Ce fichier ne doit être edité que sur une machine Linux.
+
+1/ ajouter dans mekano::list un widget qui contient le numbre minimum de liens clones
+entre 2 sctgs pour afficher la barre bleue
+
+2/ pouvoir travailler avec les matches comme avec les liens clones
+
+3/ dans mekano::1 & mekano::2 barre bordant les sequences continues
+ou sctgs quand on «clique» entre 2 conseq/sctg
+
+3/ dans mekano::1 & mekano::2 l'opération de déplacer de l'image
+dans le vertical doit être une autre opération que l'opération de déplacer de l'image
+dans le horizontal
+
+3/ dans mekano::2, modifier en temps réel l'écartement vertical entre les sctgs
+
+3/ sauvegarde dans un fichier PostScript (EPS)
+
+3/ dans mekano::selection, ne plus initialiser le champ pour sélectionner un sctg par nom avec «sctg»
+
+3/ répere visuel dans l'espace horizontale & verticale (étalon)
+
+3/ mekano::2, quand il n'y a plus de liens clones entre les 2 sctg,
+	positionner les de telle sorte que le centre du plus grand match soit vertical
+=============================================
+
+one et two, augmenter la distance entre les liens clones qu'ils ne se combinent plus
+
+$Revision: 752 $
+(paps --font_scale 10 --family Helvetica priorités | lp -s)
